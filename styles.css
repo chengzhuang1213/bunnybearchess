@@ -1517,7 +1517,7 @@ body {
 
   .battle-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 8px;
     align-items: start;
     min-height: auto;
@@ -1526,36 +1526,53 @@ body {
   .player-card {
     width: 100%;
     min-height: 0;
-    padding: 34px 8px 8px;
+    padding: 8px;
     border-width: 3px;
     border-radius: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "avatar name score"
+      "avatar camp score";
+    align-items: center;
+    column-gap: 8px;
+    text-align: left;
   }
 
-  .player-card.player-a,
-  .player-card.player-b {
+  .player-card.player-a {
     order: 1;
   }
 
+  .player-card.player-b {
+    order: 3;
+  }
+
   .ribbon {
-    width: min(128px, 90%);
-    margin: -47px auto 8px;
-    padding: 8px 5px 9px;
+    grid-area: name;
+    width: 100%;
+    margin: 0;
+    padding: 6px 8px;
     border-width: 2px;
+    border-radius: 7px;
     font-size: clamp(15px, 4.5vw, 19px);
+    text-align: center;
   }
 
   .avatar {
-    width: clamp(58px, 19vw, 82px);
-    height: clamp(58px, 19vw, 82px);
-    margin-bottom: 8px;
+    grid-area: avatar;
+    width: clamp(50px, 15vw, 64px);
+    height: clamp(50px, 15vw, 64px);
+    margin: 0;
     border-width: 4px;
   }
 
   .camp {
-    min-height: 34px;
-    margin-bottom: 8px;
+    grid-area: camp;
+    min-height: 28px;
+    margin: 5px 0 0;
     border-width: 2px;
-    font-size: 16px;
+    border-radius: 7px;
+    font-size: 14px;
   }
 
   .camp::before {
@@ -1563,18 +1580,20 @@ body {
   }
 
   .score-label {
-    padding: 6px;
-    font-size: 16px;
+    display: none;
   }
 
   .score {
-    padding: 8px 4px 10px;
+    grid-area: score;
+    min-width: 58px;
+    padding: 10px 8px;
+    border-radius: 10px;
     font-size: 34px;
+    text-align: center;
   }
 
   .center-column {
     order: 2;
-    grid-column: 1 / -1;
     width: 100%;
     gap: 8px;
   }
@@ -1623,7 +1642,7 @@ body {
   .board-wrap {
     width: 100%;
     max-width: 100%;
-    padding: 8px;
+    padding: 7px;
     border-width: 6px;
     border-radius: 14px;
   }
@@ -1696,10 +1715,6 @@ body {
 @media (max-width: 390px) {
   .game-shell {
     padding-inline: 5px;
-  }
-
-  .battle-layout {
-    gap: 6px;
   }
 
   .board-wrap {
