@@ -1,5 +1,6 @@
-const rows = 8;
-const cols = 5;
+const totalCells = 40;
+const desktopCols = 8;
+const mobileCols = 5;
 const maxRounds = 40;
 
 const pieces = [
@@ -165,8 +166,6 @@ function startGame(options = {}) {
   state.aiThinking = false;
   const deck = makeDeck();
   state.board = deck.map((piece, index) => ({
-    row: Math.floor(index / cols),
-    col: index % cols,
     piece
   }));
   state.currentPlayer = "A";
@@ -188,8 +187,6 @@ function startGame(options = {}) {
 function createSnapshot() {
   return {
     board: state.board.map((cell) => ({
-      row: cell.row,
-      col: cell.col,
       piece: cell.piece ? { ...cell.piece } : null
     })),
     currentPlayer: state.currentPlayer,
@@ -390,19 +387,19 @@ function renderChain() {
 function render() {
   boardEl.innerHTML = "";
 
-  for (const cell of state.board) {
+  state.board.forEach((cell, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "cell";
     button.disabled = state.aiThinking || (state.gameMode === "ai" && state.currentPlayer === "B");
-    button.dataset.index = getIndex(cell.row, cell.col);
-    button.setAttribute("aria-label", describeCell(cell));
+    button.dataset.index = index;
+    button.setAttribute("aria-label", describeCell(cell, index));
 
-    if (state.selected === getIndex(cell.row, cell.col)) {
+    if (state.selected === index) {
       button.classList.add("selected");
     }
 
-    if (state.selected !== null && isLegalDestination(state.selected, getIndex(cell.row, cell.col))) {
+    if (state.selected !== null && isLegalDestination(state.selected, index)) {
       button.classList.add("move-target");
     }
 
@@ -420,9 +417,9 @@ function render() {
       `;
     }
 
-    button.addEventListener("click", () => handleCellClick(getIndex(cell.row, cell.col)));
+    button.addEventListener("click", () => handleCellClick(index));
     boardEl.append(button);
-  }
+  });
 
   scoreAEl.textContent = state.scores.A;
   scoreBEl.textContent = state.scores.B;
@@ -474,10 +471,11 @@ function countUnrevealedPieces(color) {
   return counts;
 }
 
-function describeCell(cell) {
-  if (!cell.piece) return `第 ${cell.row + 1} 行第 ${cell.col + 1} 列，空格`;
-  if (!cell.piece.revealed) return `第 ${cell.row + 1} 行第 ${cell.col + 1} 列，未开启木箱`;
-  return `第 ${cell.row + 1} 行第 ${cell.col + 1} 列，${campName(cell.piece.color)}${cell.piece.name}`;
+function describeCell(cell, index) {
+  const position = indexToPosition(index);
+  if (!cell.piece) return `第 ${position.row + 1} 行第 ${position.col + 1} 列，空格`;
+  if (!cell.piece.revealed) return `第 ${position.row + 1} 行第 ${position.col + 1} 列，未开启木箱`;
+  return `第 ${position.row + 1} 行第 ${position.col + 1} 列，${campName(cell.piece.color)}${cell.piece.name}`;
 }
 
 function handleCellClick(index) {
@@ -897,13 +895,13 @@ function isLegalDestination(fromIndex, toIndex) {
 }
 
 function areAdjacent(a, b) {
-  const from = state.board[a];
-  const to = state.board[b];
+  const from = indexToPosition(a);
+  const to = indexToPosition(b);
   return Math.abs(from.row - to.row) + Math.abs(from.col - to.col) === 1;
 }
 
 function getAdjacentIndexes(index) {
-  const cell = state.board[index];
+  const cell = indexToPosition(index);
   const candidates = [
     [cell.row - 1, cell.col],
     [cell.row + 1, cell.col],
@@ -911,12 +909,28 @@ function getAdjacentIndexes(index) {
     [cell.row, cell.col + 1]
   ];
   return candidates
-    .filter(([row, col]) => row >= 0 && row < rows && col >= 0 && col < cols)
+    .filter(([row, col]) => row >= 0 && row < boardRows() && col >= 0 && col < boardCols())
     .map(([row, col]) => getIndex(row, col));
 }
 
 function getIndex(row, col) {
-  return row * cols + col;
+  return row * boardCols() + col;
+}
+
+function indexToPosition(index) {
+  const cols = boardCols();
+  return {
+    row: Math.floor(index / cols),
+    col: index % cols
+  };
+}
+
+function boardCols() {
+  return window.matchMedia("(max-width: 760px)").matches ? mobileCols : desktopCols;
+}
+
+function boardRows() {
+  return totalCells / boardCols();
 }
 
 function campName(color) {
