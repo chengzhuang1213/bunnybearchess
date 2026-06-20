@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>兔熊快乐棋 - Blind Box Chess</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section class="screen home-screen" id="homeScreen" aria-label="首页">
+    <div class="home-panel">
+      <div class="home-kicker">Blind Box Chess</div>
+      <h1>兔熊快乐棋</h1>
+      <div class="mode-actions">
+        <button class="mode-button primary" id="twoPlayerButton" type="button">双人对战</button>
+        <button class="mode-button" id="aiButton" type="button">人机对战</button>
+        <button class="mode-button data-button" id="dataButton" type="button">数据</button>
+      </div>
+      <div class="ai-mode-panel is-hidden" id="aiModePanel" aria-label="人机对战难度">
+        <button class="ai-mode-button" type="button" data-ai-mode="normal">正常模式</button>
+        <button class="ai-mode-button danger" type="button" data-ai-mode="hell1">地狱一级：AI 小白开局</button>
+        <button class="ai-mode-button danger" type="button" data-ai-mode="hell2">地狱二级：AI 小白 + 小鸡毛开局</button>
+      </div>
+      <div class="data-panel is-hidden" id="dataPanel" aria-label="对战数据">
+        <div class="data-row">
+          <span>红方胜率</span>
+          <strong id="redWinRate">0%</strong>
+        </div>
+        <div class="data-row">
+          <span>蓝方胜率</span>
+          <strong id="blueWinRate">0%</strong>
+        </div>
+        <div class="data-total" id="statsTotal">已统计 0 局</div>
+      </div>
+      <div class="home-message" id="homeMessage">请选择对战模式</div>
+    </div>
+  </section>
+
+  <section class="screen setup-screen is-hidden" id="setupScreen" aria-label="玩家设置">
+    <div class="setup-panel">
+      <button class="back-button" id="setupBackButton" type="button">返回</button>
+      <div class="setup-step" id="setupStep">玩家 A 设置</div>
+      <h2 id="setupTitle">玩家 A，起个 ID</h2>
+      <label class="name-field">
+        <span>玩家 ID</span>
+        <input id="playerNameInput" type="text" maxlength="12" autocomplete="off" placeholder="输入 1-12 个字">
+      </label>
+      <div class="avatar-picker" id="avatarPicker" aria-label="选择头像"></div>
+      <div class="setup-error" id="setupError"></div>
+      <button class="mode-button primary setup-next" id="setupNextButton" type="button">下一步</button>
+    </div>
+  </section>
+
+  <main class="game-shell is-hidden">
+    <section class="chain-panel" aria-label="食物链闭环">
+      <div class="chain-title">食物链（闭环）</div>
+      <div class="chain-track" id="chainTrack"></div>
+      <div class="chain-note">哆啦A梦可以吃小白</div>
+    </section>
+
+    <section class="battle-layout" aria-label="游戏状态">
+      <article class="player-card player-a" id="playerACard">
+        <div class="ribbon" id="playerAName">玩家 A</div>
+        <div class="avatar"><img id="playerAAvatar" src="assets/avatars/avatar-01.png" alt="玩家 A 头像"></div>
+        <div class="camp" id="playerACamp">阵营：未确定</div>
+        <div class="score-label">得分</div>
+        <div class="score" id="scoreA">0</div>
+      </article>
+
+      <div class="center-column">
+        <div class="center-status">
+          <div class="round" id="roundText">第 1 / 40 轮</div>
+          <div class="turn" id="turnText">玩家 A 行动</div>
+          <div class="message" id="messageText">请选择一个木箱翻开。</div>
+          <div class="status-actions">
+            <button class="undo-button" id="undoButton" type="button">悔棋</button>
+            <button class="restart-button" id="restartButton" type="button">重新开局</button>
+          </div>
+        </div>
+        <section class="board-wrap" aria-label="棋盘区域">
+          <div class="board" id="board"></div>
+        </section>
+      </div>
+
+      <article class="player-card player-b" id="playerBCard">
+        <div class="ribbon" id="playerBName">玩家 B</div>
+        <div class="avatar"><img id="playerBAvatar" src="assets/avatars/avatar-02.png" alt="玩家 B 头像"></div>
+        <div class="camp" id="playerBCamp">阵营：未确定</div>
+        <div class="score-label">得分</div>
+        <div class="score" id="scoreB">0</div>
+      </article>
+    </section>
+  </main>
+
+  <div class="result-modal is-hidden" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="result-panel">
+      <div class="result-title" id="resultTitle">胜利！</div>
+      <div class="result-line" id="resultLine"></div>
+      <button class="result-button" id="resultCloseButton" type="button">继续查看棋盘</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
