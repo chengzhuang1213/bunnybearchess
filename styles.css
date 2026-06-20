@@ -589,7 +589,7 @@ body {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(8, minmax(42px, 1fr));
+  grid-template-columns: repeat(5, minmax(42px, 1fr));
   gap: clamp(5px, .75vw, 9px);
 }
 
@@ -1648,7 +1648,7 @@ body {
   }
 
   .board {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 4px;
   }
 

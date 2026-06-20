@@ -1,5 +1,5 @@
-const rows = 5;
-const cols = 8;
+const rows = 8;
+const cols = 5;
 const maxRounds = 40;
 
 const pieces = [
