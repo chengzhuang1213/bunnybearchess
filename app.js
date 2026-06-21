@@ -88,6 +88,7 @@ const gameShellEl = document.querySelector(".game-shell");
 const twoPlayerButtonEl = document.querySelector("#twoPlayerButton");
 const aiButtonEl = document.querySelector("#aiButton");
 const dataButtonEl = document.querySelector("#dataButton");
+const rulesButtonEl = document.querySelector("#rulesButton");
 const aiModePanelEl = document.querySelector("#aiModePanel");
 const aiModeButtonEls = document.querySelectorAll(".ai-mode-button");
 const dataPanelEl = document.querySelector("#dataPanel");
@@ -121,10 +122,13 @@ const playerAHiddenRosterEl = document.querySelector("#playerAHiddenRoster");
 const playerBHiddenRosterEl = document.querySelector("#playerBHiddenRoster");
 const undoButtonEl = document.querySelector("#undoButton");
 const restartButtonEl = document.querySelector("#restartButton");
+const homeButtonEl = document.querySelector("#homeButton");
 const resultModalEl = document.querySelector("#resultModal");
 const resultTitleEl = document.querySelector("#resultTitle");
 const resultLineEl = document.querySelector("#resultLine");
 const resultCloseButtonEl = document.querySelector("#resultCloseButton");
+const rulesModalEl = document.querySelector("#rulesModal");
+const rulesCloseButtonEl = document.querySelector("#rulesCloseButton");
 
 function makeDeck() {
   const deck = [];
@@ -237,6 +241,28 @@ function showScreen(screenName) {
   setupScreenEl.classList.toggle("is-hidden", screenName !== "setup");
   gameShellEl.classList.toggle("is-hidden", screenName !== "game");
   if (screenName !== "game") closeResultModal();
+}
+
+function openRulesModal() {
+  rulesModalEl.classList.remove("is-hidden");
+}
+
+function closeRulesModal() {
+  rulesModalEl.classList.add("is-hidden");
+}
+
+function returnHome() {
+  if (state.aiTimer) {
+    window.clearTimeout(state.aiTimer);
+    state.aiTimer = null;
+  }
+  state.aiThinking = false;
+  state.selected = null;
+  closeResultModal();
+  aiModePanelEl.classList.add("is-hidden");
+  dataPanelEl.classList.add("is-hidden");
+  homeMessageEl.textContent = "请选择对战模式";
+  showScreen("home");
 }
 
 function startAiGame(aiMode) {
@@ -616,49 +642,87 @@ function performAiTurn() {
 
   const capture = findBestAiCapture();
   if (capture) {
-    saveHistory();
-    const from = state.board[capture.fromIndex];
-    const to = state.board[capture.toIndex];
-    const attacker = from.piece;
-    const captured = to.piece;
-    state.scores.B += captured.value;
-    to.piece = attacker;
-    from.piece = null;
-    state.aiThinking = false;
-    setMessage(`AI 用 ${attacker.name} 吃掉 ${captured.name}，+${captured.value} 分。`);
-    finishAction();
+    executeAiCapture(capture, "AI");
     return;
   }
 
-  const hiddenIndex = pickAiHiddenBox();
-  if (hiddenIndex !== null) {
-    saveHistory();
-    const piece = state.board[hiddenIndex].piece;
-    piece.revealed = true;
-    state.aiThinking = false;
-    const pressureText = isHellMode() && isPressureReveal(hiddenIndex) ? "，正在围绕强力棋子制造吃子机会" : "";
-    setMessage(`AI 翻出了${campName(piece.color)}${piece.name}${pressureText}。`);
-    finishAction();
-    return;
-  }
+  if (isHellMode()) {
+    const setupMove = findBestTwoStepScoringMove();
+    if (setupMove) {
+      executeAiMove(setupMove, `AI 移动了 ${state.board[setupMove.fromIndex].piece.name}，准备下一步拿分。`);
+      return;
+    }
 
-  const move = pickRandomAiMove();
-  if (move) {
-    saveHistory();
-    const from = state.board[move.fromIndex];
-    const to = state.board[move.toIndex];
-    const moved = from.piece;
-    to.piece = moved;
-    from.piece = null;
-    state.aiThinking = false;
-    setMessage(`AI 移动了 ${moved.name}。`);
-    finishAction();
-    return;
+    const pressureHiddenIndex = pickPressureHiddenBox();
+    if (pressureHiddenIndex !== null) {
+      executeAiReveal(pressureHiddenIndex, "AI 正在围绕强力棋子制造吃子机会");
+      return;
+    }
+
+    const fallbackMove = pickRandomAiMove();
+    if (fallbackMove) {
+      executeAiMove(fallbackMove, `AI 移动了 ${state.board[fallbackMove.fromIndex].piece.name}。`);
+      return;
+    }
+
+    const fallbackHiddenIndex = pickRandomHiddenBox();
+    if (fallbackHiddenIndex !== null) {
+      executeAiReveal(fallbackHiddenIndex, "");
+      return;
+    }
+  } else {
+    const hiddenIndex = pickRandomHiddenBox();
+    if (hiddenIndex !== null) {
+      executeAiReveal(hiddenIndex, "");
+      return;
+    }
+
+    const move = pickRandomAiMove();
+    if (move) {
+      executeAiMove(move, `AI 移动了 ${state.board[move.fromIndex].piece.name}。`);
+      return;
+    }
   }
 
   saveHistory();
   state.aiThinking = false;
   setMessage("AI 没有可执行动作，跳过本回合。");
+  finishAction();
+}
+
+function executeAiCapture(capture, actorLabel) {
+  saveHistory();
+  const from = state.board[capture.fromIndex];
+  const to = state.board[capture.toIndex];
+  const attacker = from.piece;
+  const captured = to.piece;
+  state.scores.B += captured.value;
+  to.piece = attacker;
+  from.piece = null;
+  state.aiThinking = false;
+  setMessage(`${actorLabel} 用 ${attacker.name} 吃掉 ${captured.name}，+${captured.value} 分。`);
+  finishAction();
+}
+
+function executeAiMove(move, message) {
+  saveHistory();
+  const from = state.board[move.fromIndex];
+  const to = state.board[move.toIndex];
+  const moved = from.piece;
+  to.piece = moved;
+  from.piece = null;
+  state.aiThinking = false;
+  setMessage(message);
+  finishAction();
+}
+
+function executeAiReveal(index, suffix) {
+  saveHistory();
+  const piece = state.board[index].piece;
+  piece.revealed = true;
+  state.aiThinking = false;
+  const extra = suffix ? `，${suffix}` : "";
+  setMessage(`AI 翻出了${campName(piece.color)}${piece.name}${extra}。`);
   finishAction();
 }
 
@@ -682,6 +746,52 @@ function findBestAiCapture() {
   return captures[0] || null;
 }
 
+function findBestTwoStepScoringMove() {
+  const moves = [];
+
+  state.board.forEach((cell, fromIndex) => {
+    if (!cell.piece || !cell.piece.revealed || cell.piece.color !== state.camps.B) return;
+
+    for (const toIndex of getAdjacentIndexes(fromIndex)) {
+      const target = state.board[toIndex];
+      if (target.piece) continue;
+
+      const futureScore = bestCaptureValueFromPosition(cell.piece, toIndex, fromIndex);
+      if (futureScore > 0) {
+        moves.push({
+          fromIndex,
+          toIndex,
+          value: futureScore,
+          rank: cell.piece.rank
+        });
+      }
+    }
+  });
+
+  if (moves.length === 0) return null;
+  moves.sort((a, b) => b.value - a.value || a.rank - b.rank);
+  const bestValue = moves[0].value;
+  const bestMoves = moves.filter((move) => move.value === bestValue);
+  return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+}
+
+function bestCaptureValueFromPosition(piece, positionIndex, originalIndex) {
+  let best = 0;
+  for (const targetIndex of getAdjacentIndexes(positionIndex)) {
+    if (targetIndex === originalIndex) continue;
+    const target = state.board[targetIndex];
+    if (
+      target.piece
+      && target.piece.revealed
+      && target.piece.color === state.camps.A
+      && canCapture(piece, target.piece)
+    ) {
+      best = Math.max(best, target.piece.value);
+    }
+  }
+  return best;
+}
+
 function pickAiHiddenBox() {
   if (isHellMode()) {
     const pressureIndex = pickPressureHiddenBox();
@@ -691,7 +801,6 @@ function pickAiHiddenBox() {
 }
 
 function pickPressureHiddenBox() {
-  const priorityNames = state.aiMode === "hell2" ? ["小白", "小鸡毛"] : ["小白"];
   const candidates = [];
 
   state.board.forEach((cell, fromIndex) => {
@@ -699,7 +808,6 @@ function pickPressureHiddenBox() {
       !cell.piece
       || !cell.piece.revealed
       || cell.piece.color !== state.camps.B
-      || !priorityNames.includes(cell.piece.name)
     ) {
       return;
     }
@@ -709,14 +817,15 @@ function pickPressureHiddenBox() {
       if (target.piece && !target.piece.revealed) {
         candidates.push({
           index: toIndex,
-          anchorRank: cell.piece.rank
+          anchorRank: cell.piece.rank,
+          anchorValue: cell.piece.value
         });
       }
     }
   });
 
   if (candidates.length === 0) return null;
-  candidates.sort((a, b) => a.anchorRank - b.anchorRank);
+  candidates.sort((a, b) => a.anchorRank - b.anchorRank || b.anchorValue - a.anchorValue);
   const bestRank = candidates[0].anchorRank;
   const best = candidates.filter((candidate) => candidate.anchorRank === bestRank);
   return best[Math.floor(Math.random() * best.length)].index;
@@ -958,6 +1067,7 @@ function flashInvalid(index) {
 
 restartButtonEl.addEventListener("click", () => startGame());
 undoButtonEl.addEventListener("click", undoLastAction);
+homeButtonEl.addEventListener("click", returnHome);
 resultCloseButtonEl.addEventListener("click", closeResultAndRecord);
 twoPlayerButtonEl.addEventListener("click", () => {
   aiModePanelEl.classList.add("is-hidden");
@@ -976,6 +1086,16 @@ dataButtonEl.addEventListener("click", () => {
   dataPanelEl.classList.toggle("is-hidden");
   renderStats();
   homeMessageEl.textContent = "对战数据";
+});
+rulesButtonEl.addEventListener("click", () => {
+  aiModePanelEl.classList.add("is-hidden");
+  dataPanelEl.classList.add("is-hidden");
+  homeMessageEl.textContent = "正在查看规则说明";
+  openRulesModal();
+});
+rulesCloseButtonEl.addEventListener("click", closeRulesModal);
+rulesModalEl.addEventListener("click", (event) => {
+  if (event.target === rulesModalEl) closeRulesModal();
 });
 aiModeButtonEls.forEach((button) => {
   button.addEventListener("click", () => startAiGame(button.dataset.aiMode));

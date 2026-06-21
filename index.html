@@ -14,6 +14,7 @@
       <div class="mode-actions">
         <button class="mode-button primary" id="twoPlayerButton" type="button">双人对战</button>
         <button class="mode-button" id="aiButton" type="button">人机对战</button>
+        <button class="mode-button rules-button" id="rulesButton" type="button">规则说明</button>
         <button class="mode-button data-button" id="dataButton" type="button">数据</button>
       </div>
       <div class="ai-mode-panel is-hidden" id="aiModePanel" aria-label="人机对战难度">
@@ -75,6 +76,7 @@
           <div class="status-actions">
             <button class="undo-button" id="undoButton" type="button">悔棋</button>
             <button class="restart-button" id="restartButton" type="button">重新开局</button>
+            <button class="home-button" id="homeButton" type="button">回首页</button>
           </div>
         </div>
         <section class="board-wrap" aria-label="棋盘区域">
@@ -97,6 +99,106 @@
       <div class="result-title" id="resultTitle">胜利！</div>
       <div class="result-line" id="resultLine"></div>
       <button class="result-button" id="resultCloseButton" type="button">继续查看棋盘</button>
+    </div>
+  </div>
+
+  <div class="rules-modal is-hidden" id="rulesModal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+    <div class="rules-panel">
+      <div class="rules-header">
+        <div>
+          <div class="rules-kicker">Blind Box Chess</div>
+          <h2 id="rulesTitle">兔熊快乐棋规则说明</h2>
+        </div>
+        <button class="rules-close" id="rulesCloseButton" type="button" aria-label="关闭规则说明">×</button>
+      </div>
+
+      <div class="rules-content">
+        <section class="rules-section">
+          <h3>游戏目标</h3>
+          <p>双人或人机对战策略小游戏。玩家不需要消灭全部敌人，而是在 40 轮结束时获得更高分数。</p>
+        </section>
+
+        <section class="rules-section">
+          <h3>棋盘与开局</h3>
+          <ul>
+            <li>棋盘为 5 × 8，共 40 格。</li>
+            <li>每格开局都有一个关闭的木箱。</li>
+            <li>双方各 20 枚棋子，共 40 枚，随机放入木箱。</li>
+            <li>玩家 A 永远是红方，玩家 B 或 AI 永远是蓝方。</li>
+          </ul>
+        </section>
+
+        <section class="rules-section">
+          <h3>棋子与数值</h3>
+          <div class="rules-grid">
+            <span>小白</span><strong>10 / 100分</strong>
+            <span>小鸡毛</span><strong>9 / 90分</strong>
+            <span>库洛米</span><strong>8 / 80分</strong>
+            <span>玉桂狗</span><strong>7 / 70分</strong>
+            <span>美乐蒂</span><strong>6 / 60分</strong>
+            <span>布丁</span><strong>5 / 50分</strong>
+            <span>Kitty猫</span><strong>4 / 40分</strong>
+            <span>一二</span><strong>3 / 30分</strong>
+            <span>布布</span><strong>2 / 20分</strong>
+            <span>哆啦A梦</span><strong>1 / 10分</strong>
+          </div>
+          <p>每方每种棋子各 2 枚。棋子右下角显示强度数值，吃掉棋子获得对应分数。</p>
+        </section>
+
+        <section class="rules-section">
+          <h3>食物链闭环</h3>
+          <p>正常情况下，高等级可以吃低等级，同等级由发动攻击者吃掉防守方。</p>
+          <p class="chain-text">小白 ＞ 小鸡毛 ＞ 库洛米 ＞ 玉桂狗 ＞ 美乐蒂 ＞ 布丁 ＞ Kitty猫 ＞ 一二 ＞ 布布 ＞ 哆啦A梦 ＞ 小白</p>
+          <p>特殊闭环：哆啦A梦可以吃小白，小白不能吃哆啦A梦。</p>
+        </section>
+
+        <section class="rules-section">
+          <h3>每回合动作</h3>
+          <ul>
+            <li>翻箱子：选择一个未开启木箱，打开后棋子留在原格。</li>
+            <li>移动棋子：选择己方已翻开的棋子，上下左右移动一格。</li>
+            <li>不能斜走，不能进入未翻开的箱子格，不能进入己方棋子所在格。</li>
+            <li>可以进入空格，或进入敌方棋子格并尝试吃子。</li>
+          </ul>
+        </section>
+
+        <section class="rules-section">
+          <h3>吃子与得分</h3>
+          <ul>
+            <li>成功吃子后，敌方棋子移除，攻击方占据该格。</li>
+            <li>攻击方获得被吃棋子的分数。</li>
+            <li>例如吃掉小白 +100 分，吃掉布布 +20 分，吃掉哆啦A梦 +10 分。</li>
+          </ul>
+        </section>
+
+        <section class="rules-section">
+          <h3>结束与胜负</h3>
+          <ul>
+            <li>总共 40 轮，一轮包含红方行动一次和蓝方行动一次。</li>
+            <li>第 40 轮结束立即结算。</li>
+            <li>优先比较总得分，得分高者获胜。</li>
+            <li>若平分，比较场上剩余棋子总价值，价值高者获胜。</li>
+          </ul>
+        </section>
+
+        <section class="rules-section">
+          <h3>人机模式</h3>
+          <ul>
+            <li>正常模式：AI 正常开局。</li>
+            <li>地狱一级：AI 开局自带翻开的蓝方小白。</li>
+            <li>地狱二级：AI 开局自带翻开的蓝方小白和小鸡毛。</li>
+            <li>地狱 AI 会优先围绕自己的小白或小鸡毛翻箱，制造吃子机会。</li>
+          </ul>
+        </section>
+
+        <section class="rules-section">
+          <h3>其他功能</h3>
+          <ul>
+            <li>悔棋：双人模式回退上一步有效行动；人机模式回退玩家行动和 AI 回应。</li>
+            <li>头像下方显示该阵营尚未翻出的棋子数量，例如小白x2、布布x1。</li>
+          </ul>
+        </section>
+      </div>
     </div>
   </div>
 
