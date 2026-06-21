@@ -1001,10 +1001,14 @@ body {
 }
 
 .message {
-  min-height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
   margin: 8px auto 0;
   color: #fff7d7;
   font-size: 14px;
+  line-height: 1.35;
   text-shadow: 0 2px 0 rgba(0,0,0,.38);
 }
 
@@ -1820,7 +1824,7 @@ body {
   }
 
   .message {
-    min-height: 18px;
+    height: 38px;
     margin-top: 5px;
     font-size: 12px;
   }
